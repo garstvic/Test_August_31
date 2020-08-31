@@ -1,19 +1,18 @@
 <?php
 
-class Site
+class Site extends Controller
 {
     public function __construct()
     {
 
     }
-    
+
     public function index()
     {
-        echo "Home Page";
-    }
-    
-    public function about($id)
-    {
-        var_dump($id);
+        $data=[
+            'title'=>'Welcome Page'
+        ];
+
+        $this->view('site/index',$data);
     }
 }
