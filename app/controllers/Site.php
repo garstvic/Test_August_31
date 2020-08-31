@@ -15,4 +15,13 @@ class Site extends Controller
 
         $this->view('site/index',$data);
     }
+    
+    public function login()
+    {
+        $data=[
+            'title'=>'Login Page'
+        ];
+
+        $this->view('site/login',$data);
+    }
 }
