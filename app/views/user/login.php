@@ -9,12 +9,12 @@
                     <form action="<?=URLROOT;?>/index.php?url=user/login" method="POST">
                         <div class="form-group">
                             <label class="col-form-label" for="email">Email: <sup>*</sup></label>
-                            <input id="email" type="email" name="name" class="form-control form-control-md <?php if(!empty($data['email_err'])){?>is-invalid<?php }?>" value="<?=$data['email'];?>"/>
+                            <input id="email" type="email" name="email" class="form-control form-control-md <?php if(!empty($data['email_err'])){?>is-invalid<?php }?>" value="<?=$data['email'];?>"/>
                             <span class="invalid-feedback"><?=$data['email_err'];?></span>                                
                         </div>
                         <div class="form-group">
                             <label class="col-form-label" for="password">Password: <sup>*</sup></label>
-                            <input id="password" type="password" name="name" class="form-control form-control-md <?php if(!empty($data['password_err'])){?>is-invalid<?php }?>" value="<?=$data['password'];?>"/>
+                            <input id="password" type="password" name="password" class="form-control form-control-md <?php if(!empty($data['password_err'])){?>is-invalid<?php }?>" value="<?=$data['password'];?>"/>
                             <span class="invalid-feedback"><?=$data['password_err'];?></span>                                
                         </div>
                         <div class="row">
