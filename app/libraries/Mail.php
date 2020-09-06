@@ -45,7 +45,7 @@ class Mail
             $mail->Host=MAILHOST;
             $mail->SMTPDebug=0;
             $mail->SMTPAuth=true;
-            $mail->Port=80;
+            $mail->Port=25;
             $mail->Username=MAILUSERNAME;
             $mail->Password=MAILPASSWORD;
     

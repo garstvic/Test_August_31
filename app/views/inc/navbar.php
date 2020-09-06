@@ -11,12 +11,18 @@
           </li>
       </ul>
       <ul class="navbar-nav ml-md-auto">
-        <li class="nav-item">
-          <a class="nav-link" href="<?=URLROOT;?>/index.php?url=user/signup">Sign Up</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="<?=URLROOT;?>/index.php?url=user/login">Login</a>
-        </li>
+        <?php if(isset($_SESSION['user'])){?>
+          <li class="nav-item">
+            <a class="nav-link" href="<?=URLROOT;?>/index.php?url=user/logout">Logout</a>
+          </li>
+        <?php }else{?>
+          <li class="nav-item">
+            <a class="nav-link" href="<?=URLROOT;?>/index.php?url=user/signup">Sign Up</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="<?=URLROOT;?>/index.php?url=user/login">Login</a>
+          </li>          
+        <?php }?>
       </ul>
     </div>
   </div>

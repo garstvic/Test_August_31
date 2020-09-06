@@ -120,7 +120,7 @@ class User extends Controller
                     $is_logged=$this->user_model->login($data['email'],$data['password']);
     
                     if($is_logged){
-                        exit("SUCCESS");
+                        $this->createUserSession($this->user_model->getUser(['email'=>$data['email']]));
                     }else{
                         $data['password_err']='Password incorrect';
 
@@ -155,5 +155,24 @@ class User extends Controller
         }else{
             Url::redirect('site/index');
         }
+    }
+    
+    private function createUserSession($user)
+    {
+        $_SESSION['user']=[
+            'id'=>$user['id'],
+            'email'=>$user['email'],
+            'name'=>$user['name']
+        ];
+
+        Url::redirect('site/index');
+    }
+    
+    public function logout()
+    {
+        unset($_SESSION['user']);
+        session_destroy();
+
+        Url::redirect('site/index');
     }
 }
