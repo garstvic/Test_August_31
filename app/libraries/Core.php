@@ -8,6 +8,8 @@ class Core
     
     public function __construct()
     {
+        session_start();
+
         $url=$this->getUrl();
 
         if(isset($url[0])){
@@ -36,7 +38,11 @@ class Core
 
         $this->params=$url ? array_values($url) : [];
 
-        call_user_func_array([$this->controller,$this->action],$this->params);
+        try{
+            call_user_func_array([$this->controller,$this->action],$this->params);
+        }catch(ArgumentCountError $e){
+            Url::redirect('site/index');
+        }
     }
     
     private function getUrl()

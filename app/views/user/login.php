@@ -4,6 +4,8 @@
         <div class="col-md-6 mx-auto">
             <div class="card bg-light mt-5">
                 <div class="card-body">
+                    <?php Flash::message('register_success');?>
+                    <?php Flash::message('confirm_success');?>
                     <h2>Login</h2>                    
                     <p>Please fill in your credentials to log in</p>
                     <form action="<?=URLROOT;?>/index.php?url=user/login" method="POST">

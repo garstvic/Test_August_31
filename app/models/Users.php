@@ -46,19 +46,61 @@ class Users
     
     public function create($data)
     {
-        $this->db->query("INSERT INTO ".$this->table_name." (`name`,`email`,`password`,`confirm_token`) VALUES(:name,:email,:password,:confirm_token)");
-
-        $confirm_token=md5(uniqid().$data['name'].$data['email'].$data['password']);
+        $this->db->query("INSERT INTO `".$this->table_name."` (`name`,`email`,`password`,`confirm_token`) VALUES(:name,:email,:password,:confirm_token)");
 
         $this->db->bind(":name",$data['name']);
         $this->db->bind(":email",$data['email']);
         $this->db->bind(":password",$data['password']);
-        $this->db->bind(":confirm_token",$confirm_token);
+        $this->db->bind(":confirm_token",$data['confirm_token']);
         
         if(!$this->db->execute()){
             return false;
         }
         
         return true;
+    }
+    
+    public function confirm($confirm_token)
+    {
+        if(strlen($confirm_token)){
+            preg_match('/[a-z0-9]+/',$confirm_token,$matches);
+            
+            if(strlen($confirm_token)==strlen($matches[0])){
+                $confirm_token=$matches[0];
+                $user=$this->getUser(['confirm_token'=>$confirm_token]);
+
+                if($user){
+                    $this->db->query("UPDATE `".$this->table_name."` SET `confirmed` = 1, `confirm_token` = '' where id = :id");
+                    $this->db->bind(":id",$user['id']);
+                    
+                    if($this->db->execute()){
+                        return true;
+                    }
+                }
+            }
+        }
+
+        return false;
+    }
+    
+    public function isConfirmed($email)
+    {
+        $user=$this->getUser(['email'=>$email]);
+        
+        return $user ? $user['confirmed'] : false;
+
+    }
+    
+    public function login($email,$password)
+    {
+        $user=$user=$this->getUser(['email'=>$email]);
+
+        if($user){
+            if(password_verify($password,$user['password'])){
+                return true;
+            }
+        }
+        
+        return false;
     }
 }

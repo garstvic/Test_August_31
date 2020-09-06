@@ -32,7 +32,7 @@ class User extends Controller
             }elseif(!filter_var($data['email'],FILTER_VALIDATE_EMAIL)){
                 $data['email_err']='Please enter valid email';
             }elseif($this->user_model->getUser(['email'=>$data['email']])){
-                $data['email_err']='Email is already taken';
+                 $data['email_err']='Email is already taken';
             }
 
             if(empty($data['password'])){
@@ -61,8 +61,11 @@ class User extends Controller
 
             if(empty($data['name_err']) and empty($data['email_err']) and empty($data['password_err']) and empty($data['confirm_password_err'])){
                 $data['password']=password_hash($data['password'],PASSWORD_DEFAULT);
+                $data['confirm_token']=md5(uniqid().$data['name'].$data['email'].$data['password']);
                 
                 if($this->user_model->create($data)){
+                    Mail::sendConfirmMessage($data['email'],$data['confirm_token'],$data['name'],);
+                    Flash::message('register_success','You are registered, please confirm your email');
                     Url::redirect('user/login');
                 }
             }else{
@@ -83,7 +86,7 @@ class User extends Controller
             $this->view('user/signup',$data);
         }
     }
-    
+
     public function login()
     {
         if(stripos($_SERVER['REQUEST_METHOD'],'POST')===0){
@@ -103,13 +106,33 @@ class User extends Controller
             if(empty($data['password'])){
                 $data['password_err']='Please enter password';
             }
+            
+            if($this->user_model->getUser(['email'=>$data['email']])){
+                
+            }else{
+                $data['email_err']='No user found';
+            }            
 
             if(empty($data['email_err']) and empty($data['password_err'])){
-                exit("SUCCESS");
+                $is_confirmed=$this->user_model->isConfirmed($data['email']);
+
+                if($is_confirmed){
+                    $is_logged=$this->user_model->login($data['email'],$data['password']);
+    
+                    if($is_logged){
+                        exit("SUCCESS");
+                    }else{
+                        $data['password_err']='Password incorrect';
+
+                        $this->view('user/login',$data);
+                    }
+                }else{
+                    Flash::message('confirm_success','Your account is not confirmed','alert alert-danger');
+                    $this->view('user/login',$data);
+                }
             }else{
                 $this->view('user/login',$data);
             }
-
         }else{
             $data=[
                 'email'=>'',
@@ -120,5 +143,17 @@ class User extends Controller
 
             $this->view('user/login',$data);
         }
-    }    
+    }
+
+    public function confirm($token)
+    {
+        if($token){
+           if($this->user_model->confirm($token)){
+                Flash::message('confirm_success','Your account is confirmed');
+                Url::redirect('user/login');
+            }
+        }else{
+            Url::redirect('site/index');
+        }
+    }
 }
