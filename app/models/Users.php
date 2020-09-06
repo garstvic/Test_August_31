@@ -1,6 +1,6 @@
 <?php
 
-class User
+class Users
 {
     private $db;
     private $table_name='users';
@@ -12,7 +12,7 @@ class User
     
     public function getUsers()
     {
-        $this->db->query("SELECT * FROM `$this->table_name`");
+        $this->db->query("SELECT * FROM `".$this->table_name."`");
 
         return $this->db->findAll();
     }
@@ -42,5 +42,23 @@ class User
         }
 
         return $this->db->findOne();
+    }
+    
+    public function create($data)
+    {
+        $this->db->query("INSERT INTO ".$this->table_name." (`name`,`email`,`password`,`confirm_token`) VALUES(:name,:email,:password,:confirm_token)");
+
+        $confirm_token=md5(uniqid().$data['name'].$data['email'].$data['password']);
+
+        $this->db->bind(":name",$data['name']);
+        $this->db->bind(":email",$data['email']);
+        $this->db->bind(":password",$data['password']);
+        $this->db->bind(":confirm_token",$confirm_token);
+        
+        if(!$this->db->execute()){
+            return false;
+        }
+        
+        return true;
     }
 }

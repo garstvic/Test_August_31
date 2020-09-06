@@ -2,11 +2,11 @@
 
 class User extends Controller
 {
-    public function __contstruct()
+    public function __construct()
     {
-        
+        $this->user_model=$this->model('Users');
     }
-    
+
     public function signup()
     {
         if(stripos($_SERVER['REQUEST_METHOD'],'POST')===0){
@@ -31,6 +31,8 @@ class User extends Controller
                 $data['email_err']='Please enter email';
             }elseif(!filter_var($data['email'],FILTER_VALIDATE_EMAIL)){
                 $data['email_err']='Please enter valid email';
+            }elseif($this->user_model->getUser(['email'=>$data['email']])){
+                $data['email_err']='Email is already taken';
             }
 
             if(empty($data['password'])){
@@ -58,7 +60,11 @@ class User extends Controller
             }
 
             if(empty($data['name_err']) and empty($data['email_err']) and empty($data['password_err']) and empty($data['confirm_password_err'])){
-                exit("SUCCESS");
+                $data['password']=password_hash($data['password'],PASSWORD_DEFAULT);
+                
+                if($this->user_model->create($data)){
+                    Url::redirect('user/login');
+                }
             }else{
                 $this->view('user/signup',$data);
             }
@@ -111,7 +117,7 @@ class User extends Controller
                 'email_err'=>'',
                 'password_err'=>'',
             ];
-            
+
             $this->view('user/login',$data);
         }
     }    
