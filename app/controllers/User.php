@@ -144,6 +144,79 @@ class User extends Controller
             $this->view('user/login',$data);
         }
     }
+    
+    public function update()
+    {
+        if(stripos($_SERVER['REQUEST_METHOD'],'POST')===0 and $this->isLoggedIn()){
+            $_POST=filter_input_array(INPUT_POST,FILTER_SANITIZE_STRING);
+
+            $data=[
+                'title'=>'Welcome, '.$_SESSION['user']['name'],
+                'description'=>$_SESSION['user']['email'],
+                'name'=>trim($_POST['name']),
+                'old_password'=>trim($_POST['old_password']),
+                'password'=>trim($_POST['password']),
+                'name_err'=>'',
+                'old_password_err'=>'',
+                'password_err'=>'',
+            ];
+            
+            if(empty($data['name'])){
+                $data['name_err']='Please enter name';
+            }
+            
+            if(empty($data['old_password'])){
+                $data['old_password_err']='Please enter password';
+            }else{
+                $user=$this->user_model->getUser(['id'=>$_SESSION['user']['id']]);
+
+                if($user){
+                    if(!password_verify($data['old_password'],$user['password'])){
+                        $data['old_password_err']='Password incorrect';
+                    }
+                }else{
+                    $this->logout();
+                }
+            }
+
+            if(empty($data['password'])){
+                $data['password_err']='Please enter password';
+            }else{
+                if(strlen($data['password'])<8){
+                    $data['password_err']='Password must include at least eight characters';
+                }elseif(!preg_match("/[0-9]+/",$data['password'])){
+                    $data['password_err']='Password must include at least one number';
+                }elseif(!preg_match("/[a-z]+/",$data['password'])){
+                    $data['password_err']= 'Password must include at least one letter';
+                }elseif(!preg_match("/[A-Z]+/",$data['password'])){
+                    $data['password_err']='Password must include at least one CAPS';
+                }elseif( !preg_match("/\W+/",$data['password'])){
+                    $data['password_err']='Password must include at least one symbol';
+                }
+            }
+
+            if(!(empty($data['old_password']) and empty($data['passwrode']))){
+                if($data['old_password']===$data['password']){
+                    $data['password_err']='Passwords are duplicated';
+                }
+            }
+
+            if(empty($data['name_err']) and empty($data['old_password_err']) and empty($data['password_err'])){
+                $data['password']=password_hash($data['password'],PASSWORD_DEFAULT);
+                $is_user_updated=$this->user_model->update($_SESSION['user']['id'],[
+                    'name'=>$data['name'],
+                    'password'=>$data['password'],
+                ]);
+                
+                if($is_user_updated){
+                    $this->createUserSession($this->user_model->getUser(['id'=>$_SESSION['user']['id']]));
+                    Url::redirect('site/index');
+                }
+            }else{
+                $this->view('site/index',$data);
+            }
+        }
+    }
 
     public function confirm($token)
     {
@@ -174,5 +247,10 @@ class User extends Controller
         session_destroy();
 
         Url::redirect('site/index');
+    }
+    
+    public function isLoggedIn()
+    {
+        return isset($_SESSION['user']);
     }
 }

@@ -25,17 +25,17 @@ class Users
 
         $where="";
 
-        $i=1;
-        foreach($params as $column=>$value){
-            if($i>1){
+        $i=0;
+        foreach(array_keys($params) as $column){
+            if($i>0){
                 $where.=" AND ";    
             }
 
-            $where.="{$column} = '{$value}'";
+            $where.="`{$column}` = :{$column}";
             $i=$i+1;
         }
 
-        $this->db->query("SELECT * FROM `{$this->table_name}` where {$where}");
+        $this->db->query("SELECT * FROM `".$this->table_name."` WHERE {$where}");
 
         foreach($params as $column=>$value){
             $this->db->bind(":{$column}",$value);
@@ -98,6 +98,44 @@ class Users
         if($user){
             if(password_verify($password,$user['password'])){
                 return true;
+            }
+        }
+        
+        return false;
+    }
+    
+    public function update($id,$params=[])
+    {
+
+        if(!empty($params)){
+            $user=$this->getUser(['id'=>$id]);
+
+            if($user){
+                $sql="UPDATE `".$this->user_model."` SET ";
+                
+                $set="";
+        
+                $i=0;
+                foreach($params as $column=>$value){
+                    if($i>0){
+                        $set.=", ";    
+                    }
+        
+                    $set.="`{$column}` = :{$column}";
+                    $i=$i+1;
+                }
+
+                $this->db->query("UPDATE `".$this->table_name."`SET ".$set." WHERE `id` = :id");
+
+                foreach($params as $column=>$value){
+
+                    $this->db->bind(":{$column}",$value);
+                }
+                $this->db->bind(":id",$id);
+
+                if($this->db->execute()){
+                    return true;
+                }
             }
         }
         
